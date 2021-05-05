@@ -10,3 +10,5 @@ build:
 
 clean:
 	
+remove:
+	rm -rf build

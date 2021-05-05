@@ -34,6 +34,86 @@ list* d_read_file(char* file_name){
     }
     return file_rpz;
 }
+
+char d_its_left_corner(list* tab, size_t row, size_t col){
+    char c1 = d_matrice_get(tab, row, col);
+    char c2 = d_matrice_get(tab, row, col+1);
+    char c3 = d_matrice_get(tab, row+1, col);
+    return c1==CORNER_DELIMITER && c2==ROW_DELIMITER && c3==COL_DELIMITER;
+}
+char d_matrice_get(list* tab, size_t row, size_t col){
+    char c = 0;
+    cell* row_cell = (list*)l_get(tab, row);
+    if(row_cell!=NULL){
+        list* row_list = (list*)l_get(tab, row)->data;
+        cell* col_cell = l_get(row_list, col);
+        if(col_cell)
+            c = col_cell->data;
+    }
+    return c;
+}
+
+list* d_find_all_box(char* file_name){
+    list* liste_box = l_init(sizeof(box));
+    list* file_rpz = d_read_file(file_name);
+    for(size_t i=0; i<file_rpz->size; i++){
+        list* row = l_get(file_rpz, i)->data;
+        for(size_t j=0; j<row->size; j++){
+            if(d_its_left_corner(file_rpz, i, j)){
+                box b = d_find_box(file_rpz, i, j);
+                //if(!b.error)
+                    l_add(liste_box, &b);
+                
+            }
+        }
+    }
+    return liste_box;
+}
+box d_find_box(list* tab, size_t row, size_t col){
+    box actual_box;
+    actual_box.error = 0; //* no error for now
+    actual_box.left_up[0] = row;
+    actual_box.left_up[1] = col;
+    size_t col_ = col+1, row_ = row+1;
+    // * first find the right up corner
+    char c=ROW_DELIMITER;
+    for(; c==ROW_DELIMITER; col_+=1){
+        c = d_matrice_get(tab, row, col_);
+    }
+    if(c!=CORNER_DELIMITER)
+        actual_box.error = 1;
+    col_-=1; // ! quick fix 
+    actual_box.right_up[0] = row;
+    actual_box.right_up[1] = col_;
+
+    // * then find the left low corner
+    c=COL_DELIMITER;
+    for(; c==COL_DELIMITER; row_+=1){
+        c = d_matrice_get(tab, row_, col);
+    }
+    if(c!=CORNER_DELIMITER)
+        actual_box.error = 2;
+    row_-=1; // ! quick fix
+    actual_box.left_down[0] = row_;
+    actual_box.left_down[1] = col;
+
+    // * to finish let's calcultate the right low corner
+    actual_box.right_down[0] = actual_box.left_down[0];
+    actual_box.right_down[1] = actual_box.right_up[1];
+    c = d_matrice_get(tab, actual_box.right_down[0], actual_box.right_down[1]);
+    if(c!=CORNER_DELIMITER)
+        actual_box.error = 3;
+
+    return actual_box;
+}
+void d_print_box(box b){
+    printf("left up corner (%d,%d)\n", b.left_up[0], b.left_up[1]);
+    printf("right up corner (%d,%d)\n", b.right_up[0], b.right_up[1]);
+    printf("left down corner (%d,%d)\n", b.left_down[0], b.left_down[1]);
+    printf("right down corner (%d,%d)\n", b.right_down[0], b.right_down[1]);
+    printf("error (%d)\n", (int)b.error);
+}
+
 #ifdef DEBUG
 
 int main(int argc, char** argv){
@@ -59,26 +139,19 @@ int main(int argc, char** argv){
         c = d_its_left_corner(file_rpz, 0, 0);
         if(c)
             printf("its left corner !\n");
+
+        box b = d_find_box(file_rpz, 0, 0);
+        d_print_box(b);
+
+        list* list_box = d_find_all_box(argv[1]);
+        for(size_t i; i<list_box->size; i++){
+            printf("\n****box number %d****\n", i);
+            box* b = (box*)&l_get(list_box, i)->data;
+            d_print_box(*b);
+        }
+
         l_free(file_rpz);
     }
     return 0;
 }
 #endif
-
-char d_its_left_corner(list* tab, size_t row, size_t col){
-    char c1 = d_matrice_get(tab, row, col);
-    char c2 = d_matrice_get(tab, row, col+1);
-    char c3 = d_matrice_get(tab, row+1, col);
-    return c1==CORNER_DELIMITER && c2==ROW_DELIMITER && c3==COL_DELIMITER;
-}
-char d_matrice_get(list* tab, size_t row, size_t col){
-    char c = 0;
-    cell* row_cell = (list*)l_get(tab, row);
-    if(row_cell!=NULL){
-        list* row_list = (list*)l_get(tab, row)->data;
-        cell* col_cell = l_get(row_list, col);
-        if(col_cell)
-            c = col_cell->data;
-    }
-    return c;
-}
