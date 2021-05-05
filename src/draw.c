@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "draw.h"
 
@@ -61,7 +62,7 @@ list* d_find_all_box(char* file_name){
         for(size_t j=0; j<row->size; j++){
             if(d_its_left_corner(file_rpz, i, j)){
                 box b = d_find_box(file_rpz, i, j);
-                //if(!b.error)
+                if(!b.error)
                     l_add(liste_box, &b);
                 
             }
@@ -97,13 +98,15 @@ box d_find_box(list* tab, size_t row, size_t col){
     actual_box.left_down[0] = row_;
     actual_box.left_down[1] = col;
 
-    // * to finish let's calcultate the right low corner
+    // * let's calcultate the right low corner
     actual_box.right_down[0] = actual_box.left_down[0];
     actual_box.right_down[1] = actual_box.right_up[1];
     c = d_matrice_get(tab, actual_box.right_down[0], actual_box.right_down[1]);
     if(c!=CORNER_DELIMITER)
         actual_box.error = 3;
 
+    //* to finish we extract the text from the box
+    d_extract_text_from_box(tab, &actual_box);
     return actual_box;
 }
 void d_print_box(box b){
@@ -111,7 +114,80 @@ void d_print_box(box b){
     printf("right up corner (%d,%d)\n", b.right_up[0], b.right_up[1]);
     printf("left down corner (%d,%d)\n", b.left_down[0], b.left_down[1]);
     printf("right down corner (%d,%d)\n", b.right_down[0], b.right_down[1]);
+    printf("text in the box : %s\n", b.text);
     printf("error (%d)\n", (int)b.error);
+}
+
+char* d_extract_text_from_box(list* tab, box* box_){
+    printf("extract text\n");
+    char text[TEXT_S_MAX];
+    size_t char_counter = 0;
+    for(size_t row=box_->left_up[0]+1; row<box_->left_down[0]; row++){
+        for(size_t col=box_->left_up[1]+1; col<box_->right_up[1]; col++){
+            char c = d_matrice_get(tab, row, col);
+            printf("char extracted = %c\n", c);
+            if(c!=' ' && char_counter<TEXT_S_MAX-1){
+                text[char_counter] = c;
+                char_counter++;
+            }
+        }
+    }
+    text[char_counter] = 0;
+    strncpy(box_->text, text, TEXT_S_MAX);
+}
+
+void d_find_beg_connection_from_box(list* tab, box box_, list* beg_connection){
+    // * first line above the box
+    char c;
+    size_t coord[2];
+    int col_=box_.left_up[1]-1;
+    for(int col=box_.left_up[1]-1; col<=(int)box_.right_up[1]+1; col++){
+        c = d_matrice_get(tab, box_.left_up[0]-1, col);
+        if(c==COL_DELIMITER){
+            coord[0] = box_.left_up[0]-1;
+            coord[1] = col;
+            l_add(beg_connection, coord);
+        }
+    }
+
+    // * second line to the left to the box
+    for(int row=box_.left_up[0]-1; row<=box_.left_down[0]+1; row++){
+        c = d_matrice_get(tab, row, box_.left_up[1]-1);
+        if(c==ROW_DELIMITER){
+            coord[0] = row;
+            coord[1] = box_.left_up[1]-1;
+            l_add(beg_connection, coord);
+        }
+    }
+
+    // * third line to the right to the box
+    for(int row=box_.right_up[0]-1; row<=box_.left_down[0]+1; row++){
+        c = d_matrice_get(tab, row, box_.right_up[1]+1);
+        if(c==ROW_DELIMITER){
+            coord[0] = row;
+            coord[1] = box_.right_up[1]+1;
+            l_add(beg_connection, coord);
+        }
+    }
+
+    // * fourth line to the below the box
+    for(int col=box_.left_down[1]-1; col<=(int)box_.right_down[1]+1; col++){
+        c = d_matrice_get(tab, box_.left_down[0]+1, col);
+        if(c==COL_DELIMITER){
+            coord[0] = box_.left_down[0]+1;
+            coord[1] = col;
+            l_add(beg_connection, coord);
+        }
+    }
+
+}
+list* d_find_all_beg_connection(list* tab, list* list_box){
+    list* list_all_connection = l_init(sizeof(size_t)*2);
+    for(size_t i = 0; i<list_box->size; i++){
+        box* b = (box*)&l_get(list_box, i)->data;
+        d_find_beg_connection_from_box(tab, *b, list_all_connection);
+    }
+    return list_all_connection;
 }
 
 #ifdef DEBUG
@@ -148,6 +224,12 @@ int main(int argc, char** argv){
             printf("\n****box number %d****\n", i);
             box* b = (box*)&l_get(list_box, i)->data;
             d_print_box(*b);
+        }
+
+        list* connection = d_find_all_beg_connection(file_rpz, list_box);
+        for(int i=0; i<connection->size; i++){
+            size_t* coord = (size_t*)&l_get(connection, i)->data;
+            printf("connection %d : (%d; %d)\n", i, coord[0], coord[1]);
         }
 
         l_free(file_rpz);

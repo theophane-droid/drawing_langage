@@ -14,6 +14,11 @@
 
 #define TEXT_S_MAX 200
 
+typedef struct {
+    size_t row;
+    size_t col;
+} coord;
+
 typedef struct{
     size_t right_up[2];
     size_t left_up[2];
@@ -40,6 +45,14 @@ char d_matrice_get(list* tab, size_t row, size_t col);
 
 /* for debugging purpose only: this func print the content of a box */
 void d_print_box(box b);
+
+/*extract the text contained in a box*/
+char* d_extract_text_from_box(list* tab, box* box_);
+
+/* return a list of the beginning connection around the box */
+void d_find_beg_connection_from_box(list* tab, box box_, list* beg_connection);
+
+list* d_find_all_beg_connection(list* tab, list* list_box);
 
 /* 
 * Note about logic:
