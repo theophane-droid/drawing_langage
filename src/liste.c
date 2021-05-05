@@ -6,6 +6,7 @@
 #include "liste.h"
 
 
+
 void debug(char* message){
     #ifdef DEBUG
     printf("%s\n", message);
@@ -55,8 +56,9 @@ cell* l_add(list* l, void* data){
 }
 
 cell* l_get(list* l, size_t index){
-    if(index >= l->size)
+    if(index >= l->size){
         return NULL;
+    }
     size_t s1 = index;
     size_t s2 = l->size - index;
     size_t s3 = abs((int)l->cache_index - (int)index);

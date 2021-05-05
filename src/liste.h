@@ -1,8 +1,8 @@
 /* On implemente ici une liste doublement chainee avec 
 un mécanisme de cache pour optimiser le temps de parcours
 Cette liste a aussi la particularité de pouvoir stocker n'importe quel type de donnée */
-#ifndef LISTE_H
-#define LISTE_H
+#pragma once
+
 typedef struct cell{
     struct cell* prev;
     struct cell* next;
@@ -45,5 +45,3 @@ list* l_load(char* filename);
 
 /* libere une liste */
 void l_free(list* l);
-
-#endif
