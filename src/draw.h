@@ -8,9 +8,10 @@
 #define CORNER_DELIMITER '+'
 #define ROW_DELIMITER '-'
 #define COL_DELIMITER '|'
-
-#define MATRICE
-
+#define ARROW_RIGHT '>'
+#define ARROW_LEFT '<'
+#define ARROW_UP '^'
+#define ARROW_DOWN 'V'
 
 #define TEXT_S_MAX 200
 
@@ -28,6 +29,12 @@ typedef struct{
     char error; // 1 if present  
 } box;
 
+
+typedef struct{
+    char sign;
+    int current_coord[2];
+    int last_coord[2];
+} connection;
 /* return a list box (a box is delimited by CORNER_DELIMITER ) */
 list* d_find_all_box(char* file_name);
 
@@ -52,7 +59,18 @@ char* d_extract_text_from_box(list* tab, box* box_);
 /* return a list of the beginning connection around the box */
 void d_find_beg_connection_from_box(list* tab, box box_, list* beg_connection);
 
+/* find all the beginning connection around the boxes listed in list_box */
 list* d_find_all_beg_connection(list* tab, list* list_box);
+
+/* find the box that the connection relied to */
+box* d_follow_connection(list* tab, list* list_box, connection conn);
+
+/* return != 0 if (row; col) is in the perimeter of box */ 
+char d_is_in_the_perimeter(box b, size_t row, size_t col);
+
+/* find the box in which (row; col) belongs to the perimeter */
+box* d_find_the_box_in_the_perimiter(list* list_box, size_t row, size_t col);
+
 
 /* 
 * Note about logic:
