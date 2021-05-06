@@ -189,20 +189,23 @@ list* d_find_all_beg_connection(list* tab, list* list_box){
     }
     return list_all_connection;
 }
-box* d_follow_connection(list* tab, list* list_box, connection conn){ // TODO: test this func
+box* d_follow_connection(list* tab, list* list_box, connection conn){
     char current_char = d_matrice_get(tab, conn.current_coord[0], conn.current_coord[1]);
+    printf("current char %c", current_char);
+    printf(" ; current pos (%d; %d)", conn.current_coord[0],conn.current_coord[1]);
+    printf(" ; last pos (%d; %d)\n", conn.last_coord[0],conn.last_coord[1]);
     if(current_char!=ROW_DELIMITER && current_char!=COL_DELIMITER){
         if(current_char==ARROW_DOWN) {
-            return d_find_the_box_in_the_perimiter(list_box, conn.current_coord[0]+1, conn.current_coord[1]);
+            return d_find_the_box_in_the_perimeter(list_box, conn.current_coord[0]+1, conn.current_coord[1]);
         }
         if(current_char==ARROW_UP){
-            return d_find_the_box_in_the_perimiter(list_box, conn.current_coord[0]-1, conn.current_coord[1]);
+            return d_find_the_box_in_the_perimeter(list_box, conn.current_coord[0]-1, conn.current_coord[1]);
         } 
         if(current_char==ARROW_RIGHT){
-            return d_find_the_box_in_the_perimiter(list_box, conn.current_coord[0], conn.current_coord[1]+1);
+            return d_find_the_box_in_the_perimeter(list_box, conn.current_coord[0], conn.current_coord[1]+1);
         } 
         if(current_char==ARROW_LEFT){
-            return d_find_the_box_in_the_perimiter(list_box, conn.current_coord[0], conn.current_coord[1]-1);
+            return d_find_the_box_in_the_perimeter(list_box, conn.current_coord[0], conn.current_coord[1]-1);
         }
         else{
             return NULL;
@@ -212,6 +215,7 @@ box* d_follow_connection(list* tab, list* list_box, connection conn){ // TODO: t
     char save_col = conn.last_coord[1];
     conn.last_coord[0] = conn.current_coord[0];
     conn.last_coord[1] = conn.current_coord[1];
+    conn.sign = current_char;
     if(conn.sign == COL_DELIMITER){
         if(save_row<conn.current_coord[0])
             conn.current_coord[0]+=1;
@@ -222,7 +226,43 @@ box* d_follow_connection(list* tab, list* list_box, connection conn){ // TODO: t
         if(save_col<conn.current_coord[1])
             conn.current_coord[1]+=1;
         else
-            conn.current_coord[1]-=1;
+            conn.current_coord[1]-=1;   
+    }
+    char actual_char = d_matrice_get(tab, conn.current_coord[0], conn.current_coord[1]);
+    if(actual_char!=COL_DELIMITER && actual_char!=ROW_DELIMITER && 
+        actual_char!=ARROW_DOWN && actual_char!=ARROW_LEFT && actual_char!=ARROW_RIGHT && actual_char!=ARROW_UP){
+        char above_char =  d_matrice_get(tab, conn.last_coord[0]-1, conn.last_coord[1]);
+        char below_char =  d_matrice_get(tab, conn.last_coord[0]+1, conn.last_coord[1]);
+        char left_char =  d_matrice_get(tab, conn.last_coord[0], conn.last_coord[1]-1);
+        char right_char =  d_matrice_get(tab, conn.last_coord[0], conn.last_coord[1]+1);
+        // * we check above
+        if((above_char == COL_DELIMITER || above_char==ROW_DELIMITER) &&  
+            !(save_row==conn.last_coord[0]-1 && save_col==conn.last_coord[1])){
+            conn.current_coord[0]=conn.last_coord[0]-1;
+            conn.current_coord[1]=conn.last_coord[1];
+        }
+        // * then below
+        else if((below_char == COL_DELIMITER || below_char==ROW_DELIMITER) &&  
+            !(save_row==conn.last_coord[0]+1 && save_col==conn.last_coord[1])){
+            conn.current_coord[0]=conn.last_coord[0]+1;
+            conn.current_coord[1]=conn.last_coord[1];
+        }
+        // * we check to the right
+        else if((right_char == COL_DELIMITER || right_char==ROW_DELIMITER) &&  
+            !(save_row==conn.last_coord[0] && save_col==conn.last_coord[1]+1)){
+            conn.current_coord[0]=conn.last_coord[0];
+            conn.current_coord[1]=conn.last_coord[1]+1;
+        }
+        // * we check to the left
+        else if((left_char == COL_DELIMITER || left_char==ROW_DELIMITER) &&  
+            !(save_row==conn.last_coord[0] && save_col==conn.last_coord[1]-1)){
+            conn.current_coord[0]=conn.last_coord[0];
+            conn.current_coord[1]=conn.last_coord[1]-1;
+        }
+        else{
+            printf("probleme !\n");
+            return NULL;
+        }
     }
     return d_follow_connection(tab, list_box, conn);
 }
@@ -289,7 +329,12 @@ int main(int argc, char** argv){
         for(int i=0; i<connection_liste->size; i++){
             ;
             connection* conn = &l_get(connection_liste, i)->data;
-            printf("connection %d : (%d; %d)\n", i, conn->current_coord[0], conn->current_coord[1]);
+            printf("\nconnection %d : (%d; %d)\n", i, conn->current_coord[0], conn->current_coord[1]);
+            box* b3 = d_follow_connection(file_rpz, list_box, *conn);
+            printf("box relied to = %p\n", b3);
+            if(b3){
+                d_print_box(*b3);
+            }
         }
         printf("the box in the perimeter : \n");
         box* b2 = d_find_the_box_in_the_perimeter(list_box, 4, 8);

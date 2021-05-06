@@ -69,7 +69,7 @@ box* d_follow_connection(list* tab, list* list_box, connection conn);
 char d_is_in_the_perimeter(box b, size_t row, size_t col);
 
 /* find the box in which (row; col) belongs to the perimeter */
-box* d_find_the_box_in_the_perimiter(list* list_box, size_t row, size_t col);
+box* d_find_the_box_in_the_perimeter(list* list_box, size_t row, size_t col);
 
 
 /* 
