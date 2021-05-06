@@ -168,7 +168,7 @@ variable* v_init(char* variable_name, char* data_type){
         sprintf(error_msg, "%s type doesn't exist\n", data_type);
         print_error(error_msg, -2);
     }
-    //sprintf(v->variable_name,"%s", variable_name);
+    sprintf(v->variable_name,"%s", variable_name);
     return v;
 }
 
@@ -201,6 +201,8 @@ int main(){
     printf("greater = %d\n", (char)*(greater.data));
     printf("greater type = %s\n", greater.type_name);
     printf("sum type = %s\n", add.type_name);
+    printf("sum name = %s\n", add.variable_name);
+
 
 
 }
