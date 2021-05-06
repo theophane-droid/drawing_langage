@@ -1,9 +1,10 @@
 CC=gcc
+SRC_FILES=src/draw.c src/liste.c src/error_handling.c src/language.c
 
 all: build_ clean
 
-build_: build src/draw.c src/liste.c
-	$(CC) src/draw.c src/liste.c -o build/draw
+build_: build $(SRC_FILES)
+	$(CC) $(SRC_FILES) -o build/draw
 
 build:
 	mkdir build

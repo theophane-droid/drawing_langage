@@ -3,7 +3,8 @@
 * there is every functions aimed to parse the file 
 */
 
-#pragma once
+#ifndef DRAW_H
+#define DRAW_H
 #include <stdlib.h>
 
 #include "liste.h"
@@ -80,3 +81,4 @@ box* d_find_the_box_in_the_perimeter(list* list_box, size_t row, size_t col);
 * d_find_all_box call d_its_left_corner for every cell in the matrix
 * if a cell is a left corner the func call d_find_box the find out the others corners
 */
+#endif

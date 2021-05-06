@@ -1,6 +1,6 @@
 /* On implemente ici une liste doublement chainee avec 
 un mécanisme de cache pour optimiser le temps de parcours
-Cette liste a aussi la particularité de pouvoir stocker n'importe quel type de donnée */
+*/
 #pragma once
 
 typedef struct cell{
