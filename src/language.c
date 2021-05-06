@@ -4,8 +4,6 @@
 #include "langage.h"
 #include "error_handling.h"
 
-#define DEBUG
-
 execution_context context;
 
 box* dl_find_first_box(list* list_box){
