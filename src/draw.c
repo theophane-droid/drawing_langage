@@ -106,15 +106,18 @@ void d_print_box(box b){
     printf("right down corner (%d,%d)\n", b.right_down[0], b.right_down[1]);
     printf("text in the box : %s\n", b.text);
     printf("error (%d)\n", (int)b.error);
+    for(size_t i=0; i<b.children_list->size; i++){
+        box* b2 = l_get(b.children_list, i)->data; 
+        printf("relied box %d : \n", i);
+        printf("\tleft up corner (%d,%d)\n", b2->left_up[0], b2->left_up[1]);
+    }
 }
 char* d_extract_text_from_box(list* tab, box* box_){
-    printf("extract text\n");
     char text[TEXT_S_MAX];
     size_t char_counter = 0;
     for(size_t row=box_->left_up[0]+1; row<box_->left_down[0]; row++){
         for(size_t col=box_->left_up[1]+1; col<box_->right_up[1]; col++){
             char c = d_matrice_get(tab, row, col);
-            printf("char extracted = %c\n", c);
             if(c!=' ' && char_counter<TEXT_S_MAX-1){
                 text[char_counter] = c;
                 char_counter++;
@@ -181,19 +184,24 @@ void d_find_beg_connection_from_box(list* tab, box box_, list* beg_connection){
     }
 
 }
-list* d_find_all_beg_connection(list* tab, list* list_box){
-    list* list_all_connection = l_init(sizeof(connection));
+void d_find_all_beg_connection(list* tab, list* list_box){
     for(size_t i = 0; i<list_box->size; i++){
+        list* list_all_connection = l_init(sizeof(connection));
         box* b = (box*)&l_get(list_box, i)->data;
         d_find_beg_connection_from_box(tab, *b, list_all_connection);
+        for(size_t j = 0; j<list_all_connection->size; j++){
+            b->children_list = l_init(sizeof(box*));
+            connection *conn = &l_get(list_all_connection, j)->data;
+            box* relied_box = d_follow_connection(tab, list_box, *conn);
+            printf("relied box ptr = %p\n", relied_box);
+            l_add(b->children_list, &relied_box);
+            printf("add relied box left up (%d;%d)\n", relied_box->left_up[0], relied_box->left_up[1]);
+        }
+        l_free(list_all_connection);
     }
-    return list_all_connection;
 }
 box* d_follow_connection(list* tab, list* list_box, connection conn){
     char current_char = d_matrice_get(tab, conn.current_coord[0], conn.current_coord[1]);
-    printf("current char %c", current_char);
-    printf(" ; current pos (%d; %d)", conn.current_coord[0],conn.current_coord[1]);
-    printf(" ; last pos (%d; %d)\n", conn.last_coord[0],conn.last_coord[1]);
     if(current_char!=ROW_DELIMITER && current_char!=COL_DELIMITER){
         if(current_char==ARROW_DOWN) {
             return d_find_the_box_in_the_perimeter(list_box, conn.current_coord[0]+1, conn.current_coord[1]);
@@ -315,31 +323,14 @@ int main(int argc, char** argv){
         if(c)
             printf("its left corner !\n");
 
-        box b = d_find_box(file_rpz, 0, 0);
-        d_print_box(b);
-
         list* list_box = d_find_all_box(argv[1]);
-        for(size_t i; i<list_box->size; i++){
+        d_find_all_beg_connection(file_rpz, list_box);
+        printf("list box size = %d \n", list_box->size);
+        for(size_t i=0; i<list_box->size; i++){
             printf("\n****box number %d****\n", i);
             box* b = (box*)&l_get(list_box, i)->data;
             d_print_box(*b);
         }
-
-        list* connection_liste = d_find_all_beg_connection(file_rpz, list_box);
-        for(int i=0; i<connection_liste->size; i++){
-            ;
-            connection* conn = &l_get(connection_liste, i)->data;
-            printf("\nconnection %d : (%d; %d)\n", i, conn->current_coord[0], conn->current_coord[1]);
-            box* b3 = d_follow_connection(file_rpz, list_box, *conn);
-            printf("box relied to = %p\n", b3);
-            if(b3){
-                d_print_box(*b3);
-            }
-        }
-        printf("the box in the perimeter : \n");
-        box* b2 = d_find_the_box_in_the_perimeter(list_box, 4, 8);
-        printf("b2 = %p\n", b2);
-        d_print_box(*b2);
     }
     return 0;
 }

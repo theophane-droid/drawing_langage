@@ -1,4 +1,7 @@
-/* Header of drawing langage utils functions */
+/* 
+* Header of the drawing part of the drawing language, 
+* there is every functions aimed to parse the file 
+*/
 
 #pragma once
 #include <stdlib.h>
@@ -26,9 +29,9 @@ typedef struct{
     size_t right_down[2];
     size_t left_down[2];
     char text[TEXT_S_MAX];
-    char error; // 1 if present  
+    char error; // 1 if present
+    list* children_list;
 } box;
-
 
 typedef struct{
     char sign;
@@ -60,7 +63,7 @@ char* d_extract_text_from_box(list* tab, box* box_);
 void d_find_beg_connection_from_box(list* tab, box box_, list* beg_connection);
 
 /* find all the beginning connection around the boxes listed in list_box */
-list* d_find_all_beg_connection(list* tab, list* list_box);
+void d_find_all_beg_connection(list* tab, list* list_box);
 
 /* find the box that the connection relied to */
 box* d_follow_connection(list* tab, list* list_box, connection conn);
