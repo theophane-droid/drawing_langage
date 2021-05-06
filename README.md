@@ -11,7 +11,7 @@ You can now run the following command at the root of this project:
 Ensure to have gcc + make installed
 
 # 2 Compile the project
-Juste run
+Just run
 
 `make` 
 
