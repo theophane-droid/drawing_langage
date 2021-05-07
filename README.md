@@ -17,4 +17,8 @@ Just run
 
 at the root of the project. Greetings ! You can now run the project by running 
 
-`./build/draw /path/to/filetocompile`
+`./build/draw /path/to/filetoexecute`
+
+# 3 Use the drawing language
+
+There is an example of a working program in the folder example. There is no loop instructions, you can use if boxes for that.

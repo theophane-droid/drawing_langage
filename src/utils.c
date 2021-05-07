@@ -66,10 +66,15 @@ void u_print_string(char* string){
     char c = string[0];
     for(size_t i=0; c!='\0'; i++){
         c = string[i];
-        if(c!='\\' && c!='n')
-            putc(c, stdout);
-        else if(last_char=='\\' && c=='n')
+        if(last_char=='\\' && c=='n')
             putc('\n', stdout);
+        else if(last_char=='\\' && c=='t')
+            putc('\t', stdout);
+        else if(last_char=='\\' && c=='\\')
+            putc('\t', stdout);
+        else if(c!='\\')
+            putc(c, stdout);
+        
         last_char = c;
     }
 }
