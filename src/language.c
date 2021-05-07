@@ -1,12 +1,76 @@
 #include <stdio.h>
 #include <string.h>
+#include <stddef.h>
 
 #include "langage.h"
 #include "variable.h"
 #include "error_handling.h"
+#include "globals.h"
+#include "utils.h"
 
 #define DEBUG
 
+variable* dl_calc_operand(char* operand){
+    char type = u_return_type(operand);
+    variable* v;
+    if(type==U_VARNAME){
+        v = v_find(operand, v_get_main_context());
+        if(!v){
+            char error_msg[200];
+            sprintf(error_msg, "%s variable not found in context %s\n", operand);
+            print_error(error_msg, -3, NULL);
+        }
+    }
+    if(type==U_INT){
+        v = v_init("an", INT_TYPE, v_get_anonymous_context());
+        int i=atoi(operand);
+        v_set(v, &i);
+    }
+    if(type==U_FLOAT){
+        v = v_init("an", FLOAT_TYPE, v_get_anonymous_context());
+        float f=atof(operand);
+        v_set(v, &f);
+    }
+    if(type==U_STRING){
+        operand++;
+        operand[strlen(operand)-1] = 0;
+        v = v_init("an", STRING_TYPE, v_get_anonymous_context());
+        v_set(v, operand);
+    }
+    return v;
+}
+variable dl_eval_expression(char* expression){
+    variable res;
+    char operator = u_parse_expression(expression);
+    char* op1=expression;
+    char* op2=expression;
+    while(op2[0]!=0)
+        op2++;
+    op2++;
+    variable* op1_v = dl_calc_operand(op1);
+    variable* op2_v = dl_calc_operand(op2);
+    if(strcmp(op1_v->type_name, op2_v->type_name)!=0){
+        char error_msg[200];
+        sprintf(error_msg, "Invalid operation between %s and %s\n", op1_v->type_name, op2_v->type_name);
+        print_error(error_msg, -3, NULL);
+    }
+    if(operator == ADD_OPERATOR)
+        res = op1_v->add(*op1_v, *op2_v);
+    if(operator == SUB_OPERATOR){
+        int i = -(int)(*op1_v->data);
+        v_set(op2_v, &i); // * TO check
+        res = op1_v->add(*op1_v, *op2_v);
+    }
+    if(operator == MUL_OPERATOR)
+        res = op1_v->mul(*op1_v, *op2_v);
+    if(operator == DIV_OPERATOR)
+        res = op1_v->div(*op1_v, *op2_v);
+    if(operator == INF_OPERATOR)
+        res = op1_v->lesser(*op1_v, *op2_v);
+    if(operator == SUP_OPERATOR)
+        res = op1_v->greater(*op1_v, *op2_v);
+    return res;
+}
 
 list* dl_split_func_args(char* string_to_parse){
     list* l = l_init(100);
@@ -49,12 +113,10 @@ list* dl_split_func_args(char* string_to_parse){
 
 list* dl_check_number_of_args(char* instruction_name, box* b, size_t min, size_t max){
     list* args = dl_split_func_args(b->text);
-    // printf("args size = %d \n", args->size); ! TODO: remove that when debug is finished
-    // char* arg;
-    // for(size_t i=0; i<args->size; i++){
-    //     arg = &l_get(args, i)->data;
-    //     printf(" arg %d = %s", i, arg);
-    // }
+    char* arg;
+    for(size_t i=0; i<args->size; i++){
+        arg = &l_get(args, i)->data;
+    }
     if(args->size > max || args->size < min){
         char error_msg[200];
         sprintf(error_msg, "Wrong number of argument for instruction %s\n", instruction_name);
@@ -72,7 +134,6 @@ box* dl_find_first_box(list* list_box){
     }
     print_error("No first box\n", -2, NULL);
 }
-
 box* dl_exec_box(list* list_box, box* box_to_execute){
     char instruction_temp[TEXT_S_MAX];
     strcpy(instruction_temp,box_to_execute->text);
@@ -102,18 +163,13 @@ box* dl_exec_box(list* list_box, box* box_to_execute){
     }
     return following_box;
 }
-
 void dl_exec_loop(list* list_box){
     box* current_box = dl_find_first_box(list_box);
     while (current_box){
         current_box = dl_exec_box(list_box, current_box);
     }
 }
-
 box* dl_instr_first(list* listbox, box* box_to_execute, execution_context* context){
-    printf("box content = ");
-    puts(box_to_execute->text);
-    printf("\n");
     box* following = l_get(box_to_execute->children_list, 0)->data;
     return following;
 }
@@ -126,26 +182,87 @@ box* dl_instr_instance(list* listbox, box* box_to_execute, execution_context* co
     return following;
 }
 box* dl_instr_store(list* listbox, box* box_to_execute, execution_context* context){
-    printf("box content = %s\n", box_to_execute->text);
+    list* args = dl_check_number_of_args(INSTANCE_INSTR, box_to_execute, 3, 3);
+    char *variable_name = &l_get(args, 1)->data;
+    char *variable_value = &l_get(args, 2)->data;
+    variable* var = v_find(variable_name, v_get_main_context());
+    if(!var){ // * no variable found
+        char error_msg[200];
+        sprintf(error_msg, "%s doesn't exist in context\n", variable_name);
+        print_error(error_msg, -3, box_to_execute);
+    }
+    else if(variable_value[0]=='"'){ // * the value is a string
+        if(strcmp(var->type_name,STRING_TYPE)){
+            char error_msg[200];
+            sprintf(error_msg, "you can not store a string into %s \n", variable_name);
+            print_error(error_msg, -3, box_to_execute);
+        }
+        v_set(var, variable_value);
+    }
+    else{
+        if(strcmp(var->type_name,STRING_TYPE)==0){ //* the value is a number
+            char error_msg[200];
+            sprintf(error_msg, "you can not store a number into %s \n", variable_name);
+            print_error(error_msg, -3, box_to_execute);
+        }
+        else if(strcmp(var->type_name,FLOAT_TYPE)==0){//* the value is a float
+            float f = atof(variable_value);
+            v_set(var, &f);
+        }
+        else{
+            int i = atoi(variable_value);
+            v_set(var, &i);
+        }
+    }
     box* following = l_get(box_to_execute->children_list, 0)->data;
     return following;
 }
 box* dl_instr_calc(list* listbox, box* box_to_execute, execution_context* context){
-    printf("box content = %s\n", box_to_execute->text);
+    list* args = dl_check_number_of_args(INSTANCE_INSTR, box_to_execute, 3, 3);
+    char *variable_name = &l_get(args, 1)->data;
+    char *expression = &l_get(args, 2)->data;
+    variable* var = v_find(variable_name, v_get_main_context());
+    if(!var){
+        char error_msg[200];
+        sprintf(error_msg, "%s doesn't exist in context\n", variable_name);
+        print_error(error_msg, -3, box_to_execute);
+    }
+    variable result = dl_eval_expression(expression);
+    if(strcmp(result.type_name, var->type_name)!=0){
+        char error_msg[200];
+        sprintf(error_msg, "Impossible to store %s in %s\n", result.type_name, var->type_name);
+        print_error(error_msg, -3, NULL);
+    }
+    v_set(var, result.data);
     box* following = l_get(box_to_execute->children_list, 0)->data;
     return following;
 }
 box* dl_instr_if(list* listbox, box* box_to_execute, execution_context* context){
-    box* following = l_get(box_to_execute->children_list, 0)->data;
+    list* args = dl_check_number_of_args(INSTANCE_INSTR, box_to_execute, 2, 2);
+    char *expression = &l_get(args, 1)->data;
+    variable result = dl_eval_expression(expression);
+    box* following;
+    if((char)*result.data)
+        following = l_get(box_to_execute->children_list, 1)->data;
+    else
+        following = l_get(box_to_execute->children_list, 0)->data;
     return following;
 }
 box* dl_instr_print(list* listbox, box* box_to_execute, execution_context* context){
-    printf("box content = %s\n", box_to_execute->text);
+    list* args = dl_check_number_of_args(INSTANCE_INSTR, box_to_execute, 2, 2);
+    char *content = &l_get(args, 1)->data;
+    variable* content_var = dl_calc_operand(content);
+    if(strcmp(content_var->type_name, STRING_TYPE)==0)
+        u_print_string(content_var->data);
+    else if(strcmp(content_var->type_name, FLOAT_TYPE)==0)
+        printf("%f", *content_var->data);
+    else
+        printf("%d", *content_var->data);
+
     box* following = l_get(box_to_execute->children_list, 0)->data;
     return following;
 }
 box* dl_instr_end(list* listbox, box* box_to_execute, execution_context* context){
-    printf("end box\n");
     return NULL;
 }
 

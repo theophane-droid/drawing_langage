@@ -7,14 +7,11 @@
 #include "draw.h"
 #include "variable.h"
 
-#define FIRST_BOX_CONTENT "first"
-#define INSTANCE_INSTR "instance"
-#define IF_INSTR "if"
-#define STORE_INSTR "store"
-#define CALC_INSTR "calc"
-#define END_INSTR "end"
 #define PRINT_INSTR "print"
 
+variable* dl_calc_operand(char* operand);
+
+variable dl_eval_expression(char* expression);
 
 /* check if the number of args is between min and max, return args parsed */
 list* dl_check_number_of_args(char* instruction_name, box* b, size_t min, size_t max);

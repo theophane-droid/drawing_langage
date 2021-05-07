@@ -196,7 +196,6 @@ void d_find_all_beg_connection(list* tab, list* list_box){
         d_find_beg_connection_from_box(tab, *b, list_all_connection);
         b->children_list = l_init(sizeof(box*));
         for(size_t j = 0; j<list_all_connection->size; j++){
-            printf("connection %d\n", j);
             connection *conn = &l_get(list_all_connection, j)->data;
             box* relied_box = d_follow_connection(tab, list_box, *conn);
             l_add(b->children_list, &relied_box);

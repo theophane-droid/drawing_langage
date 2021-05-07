@@ -8,14 +8,7 @@
 #include <stdlib.h>
 
 #include "liste.h"
-
-#define CORNER_DELIMITER '+'
-#define ROW_DELIMITER '-'
-#define COL_DELIMITER '|'
-#define ARROW_RIGHT '>'
-#define ARROW_LEFT '<'
-#define ARROW_UP '^'
-#define ARROW_DOWN 'V'
+#include "globals.h"
 
 #define TEXT_S_MAX 200
 

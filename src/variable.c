@@ -144,7 +144,6 @@ variable* v_init(char* variable_name, char* data_type, execution_context* variab
         v->size=BOOL_SIZE;
     }
     else if(strcmp(data_type, INT_TYPE)==0){
-        printf("size = %d\n", INT_SIZE);
         v->data = malloc(INT_SIZE);
         v->add = v_add_number;
         v->mul= v_mul_number;
@@ -188,14 +187,19 @@ variable* v_init(char* variable_name, char* data_type, execution_context* variab
 }
 
 char v_check_if_already_defined(char* variable_name, execution_context* context){
+   return v_find(variable_name, context)!=NULL;
+}
+
+variable* v_find(char* variable_name, execution_context* context){
     variable* v;
-    for(size_t i=0; i<context->list_variable->size; i++){
-        v = l_get(context->list_variable, i)->data;
-        printf("check between %s and %s\n", v->variable_name, variable_name);
-        if(strcmp(v->variable_name, variable_name)==0)
-            return 1;
+    if(context->list_variable){
+        for(size_t i=0; i<context->list_variable->size; i++){
+            v = l_get(context->list_variable, i)->data;
+            if(strcmp(v->variable_name, variable_name)==0)
+                return v;
+        }
     }
-    return 0;
+    return NULL;
 }
 
 execution_context* v_get_anonymous_context(){

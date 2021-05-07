@@ -4,20 +4,7 @@
 #pragma once
 
 #include "liste.h"
-
-#define MAX_TYPE_NAME 50
-#define MAX_VAR_NAME 50
-
-#define CHAR_TYPE "char\0"
-#define CHAR_SIZE 1
-#define BOOL_TYPE "bool\0"
-#define BOOL_SIZE 1
-#define FLOAT_TYPE "float\0"
-#define FLOAT_SIZE 4
-#define INT_TYPE "int\0"
-#define INT_SIZE 8
-#define STRING_TYPE "string\0"
-#define STRING_SIZE 100
+#include "globals.h"
 
 typedef struct {
     list* list_variable;
@@ -51,6 +38,10 @@ void v_set(variable* v, void* data);
 
 /* if variable_context == NULL, no garbage collector but variable can be used out of a var context*/
 variable* v_init(char* variable_name, char* data_type, execution_context* variable_context);
+
+/* return the variable from the variable name and the specified context*/
+variable* v_find(char* variable_name, execution_context* context);
+
 
 /* return the specifed context */
 execution_context* v_get_anonymous_context();
