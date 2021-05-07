@@ -5,6 +5,7 @@
 
 #include "liste.h"
 #include "draw.h"
+#include "variable.h"
 
 #define FIRST_BOX_CONTENT "first"
 #define INSTANCE_INSTR "instance"
@@ -14,10 +15,12 @@
 #define END_INSTR "end"
 #define PRINT_INSTR "print"
 
-typedef struct {
-    char content; // ! TODO fill that
-} execution_context;
 
+/* check if the number of args is between min and max, return args parsed */
+list* dl_check_number_of_args(char* instruction_name, box* b, size_t min, size_t max);
+
+/* return a list containing box args splitted by ' '. Escaping works. Return NULL if parse error */
+list* dl_split_func_args(char* string_to_parse);
 
 // this function return a pointer to the box which contains FIRST_BOX_CONTENT
 box* dl_find_first_box(list* list_box);

@@ -56,7 +56,7 @@ list* d_find_all_box(char* file_name){
                 else{
                     char error_string[200];
                     sprintf(error_string, "error : A box is not correctely formed\n");
-                    print_error(error_string, -2);
+                    print_error(error_string, -2, NULL);
                 }
             }
         }
@@ -201,7 +201,6 @@ void d_find_all_beg_connection(list* tab, list* list_box){
             box* relied_box = d_follow_connection(tab, list_box, *conn);
             l_add(b->children_list, &relied_box);
         }
-        d_print_box(*b);
         l_free(list_all_connection);
     }
 }
@@ -275,7 +274,7 @@ box* d_follow_connection(list* tab, list* list_box, connection conn){
         else{
             char error_string[200];
             sprintf(error_string, "error : The connection placed in row %d and in col %d is not correctely formed\n", conn.current_coord[0]+1, conn.current_coord[1]+1);
-            print_error(error_string, -2);
+            print_error(error_string, -2, NULL);
         }
     }
     return d_follow_connection(tab, list_box, conn);
