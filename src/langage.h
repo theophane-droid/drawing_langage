@@ -37,3 +37,6 @@ box* dl_instr_if(list* listbox, box* box_to_execute, execution_context* context)
 box* dl_instr_print(list* listbox, box* box_to_execute, execution_context* context);
 box* dl_instr_input(list* listbox, box* box_to_execute, execution_context* context);
 box* dl_instr_end(list* listbox, box* box_to_execute, execution_context* context);
+
+/* raise an error if the number of children is not btw min and max */
+void dl_check_number_of_children(box* b, size_t min, size_t max);

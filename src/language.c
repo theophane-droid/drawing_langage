@@ -10,6 +10,14 @@
 
 #define DEBUG
 
+/* raise an error if the number of children is not btw min and max */
+void dl_check_number_of_children(box* b, size_t min, size_t max){
+    if(b->children_list->size < min || b->children_list->size > max ){
+            char error_msg[200] ;
+            sprintf(error_msg, "The number of children boxes is not correct for this instruction, this instruction is waiting between %d and %d children\n", (int)min, (int) max);
+            print_error(error_msg, -3, b);
+    }
+}
 variable* dl_calc_operand(char* operand){
     char type = u_return_type(operand);
     variable* v;
@@ -140,23 +148,29 @@ box* dl_exec_box(list* list_box, box* box_to_execute){
     char* instruction = strtok(instruction_temp, " "); // * because strtok parse inplace
     box* following_box;
     execution_context* context = v_get_main_context(); 
+    if(strcmp(instruction, IF_INSTR)==0){
+        dl_check_number_of_children(box_to_execute, 2, 2);
+        following_box = dl_instr_if(list_box, box_to_execute, context);
+    }
+    else if(strcmp(instruction, END_INSTR)==0){
+        dl_check_number_of_children(box_to_execute, 0, 0);
+        following_box = dl_instr_end(list_box, box_to_execute, context);
+    }
+    else // * if instruction != IF, it's need only one child
+        dl_check_number_of_children(box_to_execute, 1, 1);
+
     if(strcmp(instruction, FIRST_BOX_CONTENT)==0){
         following_box = dl_instr_first(list_box, box_to_execute, context);
     }
     if(strcmp(instruction, INSTANCE_INSTR)==0){
         following_box = dl_instr_instance(list_box, box_to_execute, context);
     }
-    if(strcmp(instruction, IF_INSTR)==0){
-        following_box = dl_instr_if(list_box, box_to_execute, context);
-    }
+    
     if(strcmp(instruction, STORE_INSTR)==0){
         following_box = dl_instr_store(list_box, box_to_execute, context);
     }
     if(strcmp(instruction, CALC_INSTR)==0){
         following_box = dl_instr_calc(list_box, box_to_execute, context);
-    }
-    if(strcmp(instruction, END_INSTR)==0){
-        following_box = dl_instr_end(list_box, box_to_execute, context);
     }
     if(strcmp(instruction, PRINT_INSTR)==0){
         following_box = dl_instr_print(list_box, box_to_execute, context);

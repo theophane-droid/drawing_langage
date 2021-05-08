@@ -32,6 +32,8 @@ typedef struct{
     int current_coord[2];
     int last_coord[2];
 } connection;
+
+
 /* return a list box (a box is delimited by CORNER_DELIMITER ) */
 list* d_find_all_box(char* file_name);
 
