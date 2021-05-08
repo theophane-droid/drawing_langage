@@ -35,4 +35,5 @@ box* dl_instr_store(list* listbox, box* box_to_execute, execution_context* conte
 box* dl_instr_calc(list* listbox, box* box_to_execute, execution_context* context);
 box* dl_instr_if(list* listbox, box* box_to_execute, execution_context* context);
 box* dl_instr_print(list* listbox, box* box_to_execute, execution_context* context);
+box* dl_instr_input(list* listbox, box* box_to_execute, execution_context* context);
 box* dl_instr_end(list* listbox, box* box_to_execute, execution_context* context);

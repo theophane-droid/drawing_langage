@@ -17,7 +17,7 @@ variable* dl_calc_operand(char* operand){
         v = v_find(operand, v_get_main_context());
         if(!v){
             char error_msg[200];
-            sprintf(error_msg, "%s variable not found in context %s\n", operand);
+            sprintf(error_msg, "%s variable not found in context\n", operand);
             print_error(error_msg, -3, NULL);
         }
     }
@@ -161,6 +161,9 @@ box* dl_exec_box(list* list_box, box* box_to_execute){
     if(strcmp(instruction, PRINT_INSTR)==0){
         following_box = dl_instr_print(list_box, box_to_execute, context);
     }
+    if(strcmp(instruction, INPUT_INSTR)==0){
+        following_box = dl_instr_input(list_box, box_to_execute, context);
+    }
     return following_box;
 }
 void dl_exec_loop(list* list_box){
@@ -184,36 +187,20 @@ box* dl_instr_instance(list* listbox, box* box_to_execute, execution_context* co
 box* dl_instr_store(list* listbox, box* box_to_execute, execution_context* context){
     list* args = dl_check_number_of_args(INSTANCE_INSTR, box_to_execute, 3, 3);
     char *variable_name = &l_get(args, 1)->data;
-    char *variable_value = &l_get(args, 2)->data;
+    char *operand = &l_get(args, 2)->data;
     variable* var = v_find(variable_name, v_get_main_context());
     if(!var){ // * no variable found
         char error_msg[200];
         sprintf(error_msg, "%s doesn't exist in context\n", variable_name);
         print_error(error_msg, -3, box_to_execute);
     }
-    else if(variable_value[0]=='"'){ // * the value is a string
-        if(strcmp(var->type_name,STRING_TYPE)){
-            char error_msg[200];
-            sprintf(error_msg, "you can not store a string into %s \n", variable_name);
-            print_error(error_msg, -3, box_to_execute);
-        }
-        v_set(var, variable_value);
+    variable* operand_var = dl_calc_operand(operand);
+    if(strcmp(operand_var->type_name, var->type_name)!=0){
+        char error_msg[200];
+        sprintf(error_msg, "You can not store a %s in a %s\n", operand_var->type_name, var->type_name);
+        print_error(error_msg, -3, box_to_execute);
     }
-    else{
-        if(strcmp(var->type_name,STRING_TYPE)==0){ //* the value is a number
-            char error_msg[200];
-            sprintf(error_msg, "you can not store a number into %s \n", variable_name);
-            print_error(error_msg, -3, box_to_execute);
-        }
-        else if(strcmp(var->type_name,FLOAT_TYPE)==0){//* the value is a float
-            float f = atof(variable_value);
-            v_set(var, &f);
-        }
-        else{
-            int i = atoi(variable_value);
-            v_set(var, &i);
-        }
-    }
+    v_set(var, operand_var->data);
     box* following = l_get(box_to_execute->children_list, 0)->data;
     return following;
 }
@@ -259,6 +246,29 @@ box* dl_instr_print(list* listbox, box* box_to_execute, execution_context* conte
     else
         printf("%d", *content_var->data);
 
+    box* following = l_get(box_to_execute->children_list, 0)->data;
+    return following;
+}
+box* dl_instr_input(list* listbox, box* box_to_execute, execution_context* context){
+    list* args = dl_check_number_of_args(INSTANCE_INSTR, box_to_execute, 2, 2);
+    char *variable_name = &l_get(args, 1)->data;
+    variable* var = v_find(variable_name, v_get_main_context());
+    if(!var){
+        char error_msg[200];
+        sprintf(error_msg, "%s doesn't exist in context\n", variable_name);
+        print_error(error_msg, -3, box_to_execute);
+    }
+    if (strcmp(var->type_name, STRING_TYPE)==0)
+        scanf("%s", var->data);
+    else if (strcmp(var->type_name, CHAR_TYPE)==0)
+        scanf("%c", var->data);
+    else if (strcmp(var->type_name, FLOAT_TYPE)==0)
+        scanf("%f", var->data);
+    else if (strcmp(var->type_name, BOOL_TYPE)==0)
+        scanf("%d", var->data);
+    else if (strcmp(var->type_name, INT_TYPE)==0){
+        scanf("%d", var->data);
+    }
     box* following = l_get(box_to_execute->children_list, 0)->data;
     return following;
 }

@@ -11,8 +11,9 @@
 #define STORE_INSTR "store"
 #define CALC_INSTR "calc"
 #define END_INSTR "end"
+#define INPUT_INSTR "input"
 
-#define CORNER_DELIMITER '+'
+#define CORNER_DELIMITER 'o'
 #define ROW_DELIMITER '-'
 #define COL_DELIMITER '|'
 #define ARROW_RIGHT '>'

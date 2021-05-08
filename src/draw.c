@@ -139,7 +139,7 @@ void d_find_beg_connection_from_box(list* tab, box box_, list* beg_connection){
     char c;
     connection conn;
     // * below the box
-    for(int col=box_.left_down[1]-1; col<=(int)box_.right_down[1]+1; col++){
+    for(int col=box_.left_down[1]+1; col<=(int)box_.right_down[1]-1; col++){
         c = d_matrice_get(tab, box_.left_down[0]+1, col);
         if(c==COL_DELIMITER){
             conn.current_coord[0] = box_.left_down[0]+1;
@@ -151,9 +151,8 @@ void d_find_beg_connection_from_box(list* tab, box box_, list* beg_connection){
         }
     }
     // * the right to the box
-    for(int row=box_.right_up[0]-1; row<=box_.left_down[0]+1; row++){
+    for(int row=box_.right_up[0]+1; row<=box_.left_down[0]-1; row++){
         c = d_matrice_get(tab, row, box_.right_up[1]+1);
-
         if(c==ROW_DELIMITER){
             conn.current_coord[0] = row;
             conn.current_coord[1] = box_.right_up[1]+1;
@@ -165,7 +164,7 @@ void d_find_beg_connection_from_box(list* tab, box box_, list* beg_connection){
     }
     // * above the box
   
-    for(int col=box_.left_up[1]-1; col<=(int)box_.right_up[1]+1; col++){
+    for(int col=box_.left_up[1]+1; col<=(int)box_.right_up[1]-1; col++){
         c = d_matrice_get(tab, box_.left_up[0]-1, col);
         if(c==COL_DELIMITER){
             conn.current_coord[0] = box_.left_up[0]-1;
@@ -177,7 +176,7 @@ void d_find_beg_connection_from_box(list* tab, box box_, list* beg_connection){
         }
     }
     // * left to the box
-    for(int row=box_.left_up[0]-1; row<=box_.left_down[0]+1; row++){
+    for(int row=box_.left_up[0]+1; row<=box_.left_down[0]-1; row++){
         c = d_matrice_get(tab, row, box_.left_up[1]-1);
         if(c==ROW_DELIMITER){
             conn.current_coord[0] = row;
@@ -209,16 +208,17 @@ box* d_follow_connection(list* tab, list* list_box, connection conn){
         if(current_char==ARROW_DOWN) {
             return d_find_the_box_in_the_perimeter(list_box, conn.current_coord[0]+1, conn.current_coord[1]);
         }
-        if(current_char==ARROW_UP){
+        else if(current_char==ARROW_UP){
             return d_find_the_box_in_the_perimeter(list_box, conn.current_coord[0]-1, conn.current_coord[1]);
         } 
-        if(current_char==ARROW_RIGHT){
+        else if(current_char==ARROW_RIGHT){
             return d_find_the_box_in_the_perimeter(list_box, conn.current_coord[0], conn.current_coord[1]+1);
         } 
-        if(current_char==ARROW_LEFT){
+        else if(current_char==ARROW_LEFT){
             return d_find_the_box_in_the_perimeter(list_box, conn.current_coord[0], conn.current_coord[1]-1);
         }
         else{
+            printf("return NULL");
             return NULL;
         }
     }
