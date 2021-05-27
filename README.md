@@ -21,4 +21,4 @@ at the root of the project. Greetings ! You can now run the project by running
 
 # 3 Use the drawing language
 
-There different example of working programs in the folder example. There is no loop instructions, you can use if boxes for that.
+There is different example of working programs in the folder example. There is no loop instructions, you can use if boxes for that.
